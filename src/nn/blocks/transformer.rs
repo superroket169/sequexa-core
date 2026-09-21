@@ -25,7 +25,11 @@ impl<B: Backend> Architecture<B> for Transformer {
         let hidden = cfg.ffn_hidden;
         let head_dim = cfg.head_dim();
         let ctx = &bw.qkv_proj.ctx;
-        let norm_shape = NormMeta { seq_len: rows, size: dim, eps: cfg.norm_eps };
+        let norm_shape = NormMeta {
+            seq_len: rows,
+            size: dim,
+            eps: cfg.norm_eps,
+        };
 
         vec![
             node!("n1" <- &[("input", 0)], TrainOp::RmsNorm(RmsNormOp::new(&bw.norm_1, norm_shape))),
@@ -61,7 +65,11 @@ impl<B: Backend> Architecture<B> for Transformer {
         let dim = cfg.dim;
         let hidden = cfg.ffn_hidden;
         let head_dim = cfg.head_dim();
-        let norm_shape = NormMeta { seq_len: prompt_len, size: dim, eps: cfg.norm_eps };
+        let norm_shape = NormMeta {
+            seq_len: prompt_len,
+            size: dim,
+            eps: cfg.norm_eps,
+        };
 
         vec![
             node!("n1" <- &[("input", 0)], PrefillOp::RmsNorm(RmsNormOp::new(&bw.norm_1, norm_shape))),
@@ -101,7 +109,11 @@ impl<B: Backend> Architecture<B> for Transformer {
         let dim = cfg.dim;
         let hidden = cfg.ffn_hidden;
         let head_dim = cfg.head_dim();
-        let norm_shape = NormMeta { seq_len: 1, size: dim, eps: cfg.norm_eps };
+        let norm_shape = NormMeta {
+            seq_len: 1,
+            size: dim,
+            eps: cfg.norm_eps,
+        };
 
         vec![
             node!("n1" <- &[("input", 0)], DecodeOp::RmsNorm(RmsNormOp::new(&bw.norm_1, norm_shape))),

@@ -2,6 +2,13 @@
 name = "sequexa-core"
 version = "0.1.0"
 edition = "2024"
+description = "A sequential model engine in Rust with a built-in autograd engine, built on wilupgu."
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/superroket169/sequexa-core"
+readme = "README.md"
+keywords = ["autograd", "transformer", "machine-learning", "gpu", "wgpu"]
+categories = ["science"]
+include = ["src/**", "Cargo.toml", "LICENSE-*", "README.md"]
 
 [dependencies]
 wilupgu = { path = "../wilupgu" }

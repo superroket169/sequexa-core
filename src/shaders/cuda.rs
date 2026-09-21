@@ -29,7 +29,8 @@ pub(crate) const CACHE_WRITE: &str = include_str!("cuda/cache_write.cu");
 pub(crate) const FLASH_ATTENTION: &str = include_str!("cuda/fwd/flash_attention.cu");
 pub(crate) const FLASH_ATTENTION_BWD_D: &str = include_str!("cuda/bwd/flash_attention_bwd_d.cu");
 pub(crate) const FLASH_ATTENTION_BWD_DQ: &str = include_str!("cuda/bwd/flash_attention_bwd_dq.cu");
-pub(crate) const FLASH_ATTENTION_BWD_DKDV: &str = include_str!("cuda/bwd/flash_attention_bwd_dkdv.cu");
+pub(crate) const FLASH_ATTENTION_BWD_DKDV: &str =
+    include_str!("cuda/bwd/flash_attention_bwd_dkdv.cu");
 pub(crate) const GRAD_SUMSQ: &str = include_str!("cuda/bwd/grad_sumsq.cu");
 pub(crate) const GRAD_NORM_SCALE: &str = include_str!("cuda/bwd/grad_norm_scale.cu");
 pub(crate) const GRAD_SCALE: &str = include_str!("cuda/bwd/grad_scale.cu");

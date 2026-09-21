@@ -28,7 +28,11 @@ impl DiagnosticSuite {
             .map(|check| {
                 println!("--- {} ---", check.name());
                 let pass = check.run();
-                println!("{} -> {}\n", check.name(), if pass { "PASS" } else { "FAIL" });
+                println!(
+                    "{} -> {}\n",
+                    check.name(),
+                    if pass { "PASS" } else { "FAIL" }
+                );
                 (check.name(), pass)
             })
             .collect();

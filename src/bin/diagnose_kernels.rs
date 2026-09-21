@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
+use rand::Rng;
 use sequexa_core::diagnostic::{DiagnosticCheck, DiagnosticSuite};
 use sequexa_core::nn::{Layer, RMSNorm};
 use sequexa_core::shaders;
-use rand::Rng;
 use wilupgu::{Backend, Binding, ComputeGraph, Tensor, TensorMode, WgpuBackend};
 
 static DIAG_RNG: std::sync::OnceLock<std::sync::Mutex<rand::rngs::StdRng>> =

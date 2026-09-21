@@ -1,5 +1,5 @@
-use super::super::ops::full_seq::TrainOp;
 use super::super::kernels::{GraphBuilder, Train};
+use super::super::ops::full_seq::TrainOp;
 use super::super::tape::Backward;
 use std::sync::Arc;
 use wilupgu::{Backend, Tensor};
@@ -27,5 +27,13 @@ macro_rules! impl_backward_dispatch {
 }
 
 impl_backward_dispatch!(TrainOp {
-    Embedding, Linear, RmsNorm, Silu, Add, RopeQk, QkvSplit, Attention, Leaf,
+    Embedding,
+    Linear,
+    RmsNorm,
+    Silu,
+    Add,
+    RopeQk,
+    QkvSplit,
+    Attention,
+    Leaf,
 });

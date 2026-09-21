@@ -1,5 +1,5 @@
-use super::super::ops::cached::{CacheWriteOp, CachedAttentionOp, DecodeOp, RopeOffsetOp};
 use super::super::kernels::meta::KernelMeta;
+use super::super::ops::cached::{CacheWriteOp, CachedAttentionOp, DecodeOp, RopeOffsetOp};
 use super::super::tape::Advance;
 use wilupgu::Backend;
 

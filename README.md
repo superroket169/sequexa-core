@@ -1,10 +1,10 @@
 # sequexa-core
 
-sequexa-core is an LLM engine built on [wilupgu](../wilupgu), a
+sequexa-core is a sequential model engine with a built-in autograd engine,
+built on [wilupgu](https://github.com/superroket169/wilupgu), a
 backend-independent tensor/dispatch library (wgpu / CUDA / CPU). It
 prioritizes code cleanliness and extensibility over research-driven
-experimentation: every kernel sits behind a single emitter, bindings and
-kernel configuration are type-checked at zero runtime cost, and the
+experimentation: every kernel sits behind a single emitter, and the
 Train / Prefill / Decode phase system (`GraphBuilder<Phase>`) makes using a
 kernel in the wrong phase a compile error. Training and inference share the
 same `ModelWeights` but build entirely separate graphs. No ML framework is
@@ -67,4 +67,10 @@ cargo test -- --test-threads=1   # ALWAYS single-threaded: parallel tests
 
 ## License
 
-No license file is currently present in this repository.
+Licensed under either of [Apache License, Version 2.0](LICENSE-APACHE) or
+[MIT license](LICENSE-MIT) at your option.
+
+Unless you explicitly state otherwise, any contribution intentionally
+submitted for inclusion in this work by you, as defined in the Apache-2.0
+license, shall be dual licensed as above, without any additional terms or
+conditions.

@@ -572,7 +572,9 @@ pub(crate) fn flash_attention(bindings: &[CpuBinding]) {
 
             for j in 0..=row {
                 let kv_off = (row_offset + j) * dim + head_off;
-                let score: f32 = (0..head_dim).map(|d| q[q_off + d] * k[kv_off + d]).sum::<f32>()
+                let score: f32 = (0..head_dim)
+                    .map(|d| q[q_off + d] * k[kv_off + d])
+                    .sum::<f32>()
                     * scale;
 
                 let new_max = row_max.max(score);
@@ -650,7 +652,9 @@ pub(crate) fn flash_attention_bwd_dq(bindings: &[CpuBinding]) {
             let mut dq_acc = vec![0.0f32; head_dim];
             for j in 0..=row {
                 let kv_off = (row_offset + j) * dim + head_off;
-                let score: f32 = (0..head_dim).map(|d| q[q_off + d] * k[kv_off + d]).sum::<f32>()
+                let score: f32 = (0..head_dim)
+                    .map(|d| q[q_off + d] * k[kv_off + d])
+                    .sum::<f32>()
                     * scale;
                 let p = (score - l_i).exp();
 

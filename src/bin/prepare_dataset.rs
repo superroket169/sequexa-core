@@ -23,7 +23,8 @@ fn main() {
         .and_then(|s| s.parse().ok())
         .unwrap_or(DEFAULT_EVAL_DOCS);
 
-    let file = File::open(parquet_path).unwrap_or_else(|e| panic!("cannot open {parquet_path}: {e}"));
+    let file =
+        File::open(parquet_path).unwrap_or_else(|e| panic!("cannot open {parquet_path}: {e}"));
     let reader =
         SerializedFileReader::new(file).unwrap_or_else(|e| panic!("not a valid parquet file: {e}"));
 
@@ -45,7 +46,11 @@ fn main() {
     for row in reader.get_row_iter(None).expect("cannot read rows") {
         let row = row.expect("corrupt row");
         let text = row.get_string(text_col).expect("text column not a string");
-        let out = if docs < eval_docs { &mut eval } else { &mut train };
+        let out = if docs < eval_docs {
+            &mut eval
+        } else {
+            &mut train
+        };
         out.write_all(text.as_bytes()).unwrap();
         out.write_all(b"\n").unwrap();
         bytes += text.len() + 1;

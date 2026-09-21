@@ -1,6 +1,6 @@
+use super::super::kernels::{Decode, GraphBuilder, Prefill, Train};
 use super::super::ops::cached::{DecodeOp, PrefillOp};
 use super::super::ops::full_seq::TrainOp;
-use super::super::kernels::{Decode, GraphBuilder, Prefill, Train};
 use super::super::tape::Forward;
 use std::sync::Arc;
 use wilupgu::{Backend, Tensor};

@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
+use rand::Rng;
 use sequexa_core::config::{ModelConfig, TrainConfig};
 use sequexa_core::diagnostic::{DiagnosticCheck, DiagnosticSuite};
 use sequexa_core::nn::{Model, ModelWeights};
-use rand::Rng;
 use wilupgu::{Backend, Tensor, WgpuBackend};
 
 static DIAG_RNG: std::sync::OnceLock<std::sync::Mutex<rand::rngs::StdRng>> =
@@ -60,7 +60,11 @@ impl<B: Backend> DiagnosticCheck for ParamCountCheck<B> {
             "total trainable parameters = {} ({:.1}M){}",
             total,
             total as f64 / 1e6,
-            if pass { "" } else { "  <-- RED FLAG: far below 117M" }
+            if pass {
+                ""
+            } else {
+                "  <-- RED FLAG: far below 117M"
+            }
         ));
         pass
     }
@@ -291,7 +295,9 @@ fn memorization_run<B: Backend>(check: &MemorizationCheck<B>, ctx: Arc<B>, lr: f
         if pass { "PASS" } else { "FAIL" }
     ));
     if !pass {
-        check.log("RED FLAG: tiny single-layer model could not memorize a fixed batch in 600 steps.");
+        check.log(
+            "RED FLAG: tiny single-layer model could not memorize a fixed batch in 600 steps.",
+        );
         check.log(
             "This points to a bug in the training loop itself (optimizer, backward, or loss),",
         );
@@ -445,9 +451,18 @@ fn run_diagnostics<B: Backend>(ctx: Arc<B>) {
     }
 
     DiagnosticSuite::new()
-        .add(Box::new(ParamCountCheck { ctx: ctx.clone(), vocab_size }))
-        .add(Box::new(GradFlowCheck { ctx: ctx.clone(), vocab_size }))
-        .add(Box::new(AccumulationCheck { ctx: ctx.clone(), vocab_size }))
+        .add(Box::new(ParamCountCheck {
+            ctx: ctx.clone(),
+            vocab_size,
+        }))
+        .add(Box::new(GradFlowCheck {
+            ctx: ctx.clone(),
+            vocab_size,
+        }))
+        .add(Box::new(AccumulationCheck {
+            ctx: ctx.clone(),
+            vocab_size,
+        }))
         .add(Box::new(MemorizationCheck { ctx: ctx.clone() }))
         .add(Box::new(PrefillDecodeParityCheck { ctx: ctx.clone() }))
         .add(Box::new(DecodeCacheSpeedCheck { ctx }))

@@ -30,7 +30,10 @@ impl std::fmt::Display for ModelError {
             }
             ModelError::ContextFull { max } => write!(f, "context window is full ({max} tokens)"),
             ModelError::NoCache => {
-                write!(f, "no cache attached (call replace_cache or generate first)")
+                write!(
+                    f,
+                    "no cache attached (call replace_cache or generate first)"
+                )
             }
             ModelError::CacheNotEmpty { cur_len } => write!(
                 f,
