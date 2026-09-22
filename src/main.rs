@@ -23,6 +23,34 @@ fn find_latest_checkpoint(dir: &str) -> Option<(String, usize)> {
         .max_by_key(|(_, step)| *step)
 }
 
+const KEEP_CHECKPOINTS: usize = 3;
+
+/// Deletes all but the newest `keep` model_step_<N>.bin files.
+fn prune_checkpoints(dir: &str, keep: usize) {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return;
+    };
+    let mut steps: Vec<(usize, std::path::PathBuf)> = entries
+        .filter_map(|e| e.ok())
+        .filter_map(|e| {
+            let name = e.file_name().into_string().ok()?;
+            let step = name
+                .strip_prefix("model_step_")?
+                .strip_suffix(".bin")?
+                .parse::<usize>()
+                .ok()?;
+            Some((step, e.path()))
+        })
+        .collect();
+    steps.sort_by_key(|(step, _)| std::cmp::Reverse(*step));
+    for (_, path) in steps.into_iter().skip(keep) {
+        match std::fs::remove_file(&path) {
+            Ok(()) => println!("--- Old checkpoint removed: {} ---", path.display()),
+            Err(e) => eprintln!("WARNING: could not remove {}: {e}", path.display()),
+        }
+    }
+}
+
 struct EvalSet {
     inputs: Vec<u32>,
     targets: Vec<u32>,
@@ -238,6 +266,11 @@ fn run_training<B: Backend>(ctx: Arc<B>, model_cfg: ModelConfig, train_cfg: Trai
     println!("{}", "-".repeat(35));
 
     let accumulation_steps = train_cfg.accumulation_steps;
+
+    let tokens_per_step = (train_cfg.batch_size * cfg.seq_len as usize) as f64;
+    let mut last_log = std::time::Instant::now();
+    let mut last_log_step = start_step;
+
     for step in start_step..train_cfg.max_steps {
         let (inputs, targets) = dataset.random_batch(train_cfg.batch_size, &mut rng);
 
@@ -257,7 +290,20 @@ fn run_training<B: Backend>(ctx: Arc<B>, model_cfg: ModelConfig, train_cfg: Trai
 
         if step % train_cfg.log_every == 0 {
             let (_, lr) = model.current_lr();
-            println!("step {:6} | loss {:.4} | lr {:.2e}", step, loss, lr);
+
+            // Throughput since the previous log line (micro-steps).
+            let steps = (step + 1 - last_log_step) as f64;
+            let secs = last_log.elapsed().as_secs_f64();
+            println!(
+                "step {:6} | loss {:.4} | lr {:.2e} | {:.0} ms/step | {:.0} tok/s",
+                step,
+                loss,
+                lr,
+                secs * 1000.0 / steps,
+                steps * tokens_per_step / secs
+            );
+            last_log = std::time::Instant::now();
+            last_log_step = step + 1;
             log_train_step(step, loss, lr);
         }
 
@@ -274,6 +320,7 @@ fn run_training<B: Backend>(ctx: Arc<B>, model_cfg: ModelConfig, train_cfg: Trai
             let path = format!("checkpoints/model_step_{}.bin", step);
             model.save_checkpoint(&path, step as u64).unwrap();
             println!("--- Checkpoint saved: {} ---", path);
+            prune_checkpoints("checkpoints", KEEP_CHECKPOINTS);
         }
 
         if step % train_cfg.eval_every == 0 && step > start_step {
@@ -346,6 +393,44 @@ fn main() {
     train_cfg.run.grad_checkpoint = args.iter().any(|a| a == "--grad-checkpoint");
     if train_cfg.run.grad_checkpoint && !train_cfg.run.streaming {
         panic!("--grad-checkpoint requires --streaming");
+    }
+
+    // --batch-size N: overrides the micro-batch
+    if let Some(batch) = args
+        .iter()
+        .position(|a| a == "--batch-size")
+        .and_then(|i| args.get(i + 1))
+    {
+        let batch: usize = batch
+            .parse()
+            .unwrap_or_else(|_| panic!("--batch-size expects a number, got '{batch}'"));
+        let effective = train_cfg.batch_size * train_cfg.accumulation_steps;
+        assert!(
+            batch > 0 && effective % batch == 0,
+            "--batch-size {batch} must divide the effective batch {effective}"
+        );
+        train_cfg.batch_size = batch;
+        train_cfg.accumulation_steps = effective / batch;
+        train_cfg.run.batch_size = train_cfg.batch_size;
+        train_cfg.run.accumulation_steps = train_cfg.accumulation_steps;
+    }
+    if !is_chat {
+        println!(
+            "[sequexa-core] batch {} x accumulation {} = effective {}{}{}",
+            train_cfg.batch_size,
+            train_cfg.accumulation_steps,
+            train_cfg.batch_size * train_cfg.accumulation_steps,
+            if train_cfg.run.streaming {
+                " | streaming"
+            } else {
+                ""
+            },
+            if train_cfg.run.grad_checkpoint {
+                " | grad-checkpoint"
+            } else {
+                ""
+            },
+        );
     }
     if !is_chat {
         println!("[sequexa-core] train-config profile: {}", train_cfg.name);
