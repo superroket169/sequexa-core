@@ -23,6 +23,8 @@ fn find_latest_checkpoint(dir: &str) -> Option<(String, usize)> {
         .max_by_key(|(_, step)| *step)
 }
 
+/// keeps just last checkpoints
+/// NOTE: now checkpoint savings are overrited to 1/1000 check time. this should be in config
 const KEEP_CHECKPOINTS: usize = 3;
 
 /// Deletes all but the newest `keep` model_step_<N>.bin files.
